@@ -1,10 +1,9 @@
 package com.cyprias.chunkspawnerlimiter.listeners;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
-
 import com.cyprias.chunkspawnerlimiter.ChatUtil;
+import com.cyprias.chunkspawnerlimiter.ChunkSpawnerLimiter;
+import com.cyprias.chunkspawnerlimiter.Config;
+import com.cyprias.chunkspawnerlimiter.compare.MobGroupCompare;
 import com.cyprias.chunkspawnerlimiter.tasks.InspectTask;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Chunk;
@@ -15,44 +14,16 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
-
-import com.cyprias.chunkspawnerlimiter.Config;
-import com.cyprias.chunkspawnerlimiter.ChunkSpawnerLimiter;
-import com.cyprias.chunkspawnerlimiter.compare.MobGroupCompare;
 import org.bukkit.scheduler.BukkitTask;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 @RequiredArgsConstructor
 public class WorldListener implements Listener {
     private final ChunkSpawnerLimiter plugin;
-    private HashMap<Chunk, Integer> chunkTasks = new HashMap<>();
-
-    @EventHandler
-    public void onChunkLoadEvent(ChunkLoadEvent e) {
-        ChatUtil.debug("ChunkLoadEvent " + e.getChunk().getX() + " " + e.getChunk().getZ());
-        if (Config.Properties.ACTIVE_INSPECTIONS) {
-            InspectTask inspectTask = new InspectTask(e.getChunk());
-            long delay = Config.Properties.INSPECTION_FREQUENCY * 20L;
-            BukkitTask task = inspectTask.runTaskTimer(plugin, delay, delay);
-            inspectTask.setId(task.getTaskId());
-            chunkTasks.put(e.getChunk(), task.getTaskId());
-        }
-
-        if (Config.Properties.CHECK_CHUNK_LOAD)
-            checkChunk(e.getChunk());
-    }
-
-    @EventHandler
-    public void onChunkUnloadEvent(ChunkUnloadEvent e) {
-        ChatUtil.debug("ChunkUnloadEvent " + e.getChunk().getX() + " " + e.getChunk().getZ());
-
-        if (chunkTasks.containsKey(e.getChunk())) {
-            plugin.getServer().getScheduler().cancelTask(chunkTasks.get(e.getChunk()));
-            chunkTasks.remove(e.getChunk());
-        }
-
-        if (Config.Properties.CHECK_CHUNK_UNLOAD)
-            checkChunk(e.getChunk());
-    }
+    private final HashMap<Chunk, Integer> chunkTasks = new HashMap<>();
 
     /**
      * Checks the chunk for entities, removes entities if over the limit.
@@ -83,7 +54,7 @@ public class WorldListener implements Listener {
 
     private static boolean hasCustomName(Entity entity) {
         if (Config.Properties.PRESERVE_NAMED_ENTITIES)
-            return entity.getCustomName()!=null;
+            return entity.getCustomName() != null;
         return false;
     }
 
@@ -128,7 +99,6 @@ public class WorldListener implements Listener {
         return modifiedTypes;
     }
 
-
     private static void notifyPlayers(Entry<String, ArrayList<Entity>> entry, Entity[] entities, int limit, String entityType) {
         for (int i = entities.length - 1; i >= 0; i--) {
             if (entities[i] instanceof Player) {
@@ -136,5 +106,33 @@ public class WorldListener implements Listener {
                 ChatUtil.tell(p, Config.getString("messages.removedEntities", entry.getValue().size() - limit, entityType));
             }
         }
+    }
+
+    @EventHandler
+    public void onChunkLoadEvent(ChunkLoadEvent e) {
+        ChatUtil.debug("ChunkLoadEvent " + e.getChunk().getX() + " " + e.getChunk().getZ());
+        if (Config.Properties.ACTIVE_INSPECTIONS) {
+            InspectTask inspectTask = new InspectTask(e.getChunk());
+            long delay = Config.Properties.INSPECTION_FREQUENCY * 20L;
+            BukkitTask task = inspectTask.runTaskTimer(plugin, delay, delay);
+            inspectTask.setId(task.getTaskId());
+            chunkTasks.put(e.getChunk(), task.getTaskId());
+        }
+
+        if (Config.Properties.CHECK_CHUNK_LOAD)
+            checkChunk(e.getChunk());
+    }
+
+    @EventHandler
+    public void onChunkUnloadEvent(ChunkUnloadEvent e) {
+        ChatUtil.debug("ChunkUnloadEvent " + e.getChunk().getX() + " " + e.getChunk().getZ());
+
+        if (chunkTasks.containsKey(e.getChunk())) {
+            plugin.getServer().getScheduler().cancelTask(chunkTasks.get(e.getChunk()));
+            chunkTasks.remove(e.getChunk());
+        }
+
+        if (Config.Properties.CHECK_CHUNK_UNLOAD)
+            checkChunk(e.getChunk());
     }
 }

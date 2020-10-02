@@ -11,12 +11,12 @@ public class ChatUtil {
 		toWhom.sendMessage(colorize(message));
 	}
 
-	public static String colorize(String message){
+	public static String colorize(String message) {
 		return ChatColor.translateAlternateColorCodes('&', message);
 	}
 
 	public static void debug(String message) {
-		if(Config.Properties.DEBUG_MESSAGES){
+		if (Config.Properties.DEBUG_MESSAGES) {
 			ChunkSpawnerLimiter.getInstance().getLogger().info("DEBUG " + message);
 		}
 	}

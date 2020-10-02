@@ -9,11 +9,6 @@ public class MobGroupCompare implements EntityCompare {
         this.mobGroup = mobGroup;
     }
 
-    @Override
-    public boolean isSimilar(Entity entity) {
-        return (getMobGroup(entity).equals(this.mobGroup));
-    }
-
     public static String getMobGroup(Entity entity) {
         // Determine the general group this mob belongs to.
         if (entity instanceof Animals) {
@@ -43,5 +38,10 @@ public class MobGroupCompare implements EntityCompare {
 
         // Anything else.
         return "OTHER";
+    }
+
+    @Override
+    public boolean isSimilar(Entity entity) {
+        return (getMobGroup(entity).equals(this.mobGroup));
     }
 }

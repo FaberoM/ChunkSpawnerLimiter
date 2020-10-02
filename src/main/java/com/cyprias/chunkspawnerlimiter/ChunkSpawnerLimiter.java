@@ -1,5 +1,7 @@
 package com.cyprias.chunkspawnerlimiter;
 
+import com.cyprias.chunkspawnerlimiter.listeners.EntityListener;
+import com.cyprias.chunkspawnerlimiter.listeners.WorldListener;
 import lombok.Getter;
 import lombok.Setter;
 import org.bstats.bukkit.Metrics;
@@ -9,13 +11,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.cyprias.chunkspawnerlimiter.listeners.EntityListener;
-import com.cyprias.chunkspawnerlimiter.listeners.WorldListener;
-
 public class ChunkSpawnerLimiter extends JavaPlugin {
 	@Getter
 	@Setter
 	private static ChunkSpawnerLimiter instance;
+
+	public static void cancelTask(int taskID) {
+		Bukkit.getServer().getScheduler().cancelTask(taskID);
+	}
 
 	@Override
 	public void onEnable() {
@@ -27,13 +30,11 @@ public class ChunkSpawnerLimiter extends JavaPlugin {
 		new Metrics(this, 4195);
 	}
 
-
 	@Override
 	public void onDisable() {
 		setInstance(null);
 		getServer().getScheduler().cancelTasks(this);
 	}
-
 
 	private void registerListeners() {
 		PluginManager manager = getServer().getPluginManager();
@@ -48,10 +49,6 @@ public class ChunkSpawnerLimiter extends JavaPlugin {
 		Config.reload();
 		sender.sendMessage(ChatUtil.colorize(Config.Messages.RELOADED_CONFIG));
 		return true;
-	}
-
-	public static void cancelTask(int taskID) {
-		Bukkit.getServer().getScheduler().cancelTask(taskID);
 	}
 
 
