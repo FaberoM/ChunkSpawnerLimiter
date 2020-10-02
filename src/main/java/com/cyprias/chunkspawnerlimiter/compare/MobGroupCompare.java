@@ -36,6 +36,11 @@ public class MobGroupCompare implements EntityCompare {
             return "NPC";
         }
 
+        if (entity instanceof Vehicle) {
+            //Boat, Minecart, TnT Minecart etc.
+            return "VEHICLE";
+        }
+
         // Anything else.
         return "OTHER";
     }
